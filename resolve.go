@@ -87,8 +87,10 @@ func main() {
         os.Exit(1)
     }
 
-    fmt.Fprintf(os.Stderr, "Server: %s, sending delay: %s (%d pps), retry delay: %s\n",
+    if verbose {
+        fmt.Fprintf(os.Stderr, "Server: %s, sending delay: %s (%d pps), retry delay: %s\n",
         dnsServer, sendingDelay, packetsPerSecond, retryDelay)
+    }
 
     domains := make(chan string, concurrency)
     domainSlotAvailable := make(chan bool, concurrency)
@@ -120,11 +122,14 @@ func main() {
         timeoutRegister, timeoutExpired,
         tryResolving, resolved)
     td := time.Now().Sub(t0)
-    fmt.Fprintf(os.Stderr, "Resolved %d domains in %.3fs. Average retries %.3f. Domains per second: %.3f\n",
+
+    if verbose {
+        fmt.Fprintf(os.Stderr, "Resolved %d domains in %.3fs. Average retries %.3f. Domains per second: %.3f\n",
         domainsCount,
         td.Seconds(),
         avgTries,
         float64(domainsCount)/td.Seconds())
+    }
 }
 
 type domainRecord struct {
