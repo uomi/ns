@@ -72,6 +72,8 @@ func main() {
         flag.PrintDefaults()
     }
 
+	
+	
     flag.Parse()
 
     if flag.NArg() != 0 {
@@ -101,6 +103,7 @@ func main() {
 
     go do_read_domains(domains, domainSlotAvailable)
 
+	
     c, err := net.Dial("udp", dnsServer)
     if err != nil {
         fmt.Fprintf(os.Stderr, "bind(udp, %s): %s\n", dnsServer, err)
@@ -142,7 +145,7 @@ type domainRecord struct {
 type domainAnswer struct {
     id     uint16
     domain string
-    cname  string
+    ns  string
 }
 
 func do_map_guard(domains <-chan string,
@@ -210,13 +213,13 @@ func do_map_guard(domains <-chan string,
                         dr.id, dr.domain)
                 }
 
-                cname := da.cname
+                ns := da.ns
                 // without trailing dot
                 domain := dr.domain[:len(dr.domain)-1]
 
                 // print final output
-                if cname != "" {
-                    fmt.Printf("%s, %s\n", domain, cname)
+                if ns != "" {
+                    fmt.Printf("%s, %s\n", domain, ns)
                 }
 
                 sumTries += dr.resend
@@ -248,7 +251,7 @@ func do_send(c net.Conn, tryResolving <-chan *domainRecord) {
     for {
         dr := <-tryResolving
 
-        msg := packDns(dr.domain, dr.id, dnsTypeCNAME)
+        msg := packDns(dr.domain, dr.id, dnsTypeNS)
 
         _, err := c.Write(msg)
         if err != nil {
@@ -268,7 +271,7 @@ func do_receive(c net.Conn, resolved chan<- *domainAnswer) {
             os.Exit(1)
         }
 
-        domain, id, cname := unpackDns(buf[:n], dnsTypeCNAME)
-        resolved <- &domainAnswer{id, domain, cname}
+        domain, id, ns := unpackDns(buf[:n], dnsTypeNS)
+        resolved <- &domainAnswer{id, domain, ns}
     }
 }
