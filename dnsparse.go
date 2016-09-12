@@ -24,7 +24,7 @@ func unpackDns(msg []byte, dnsType uint16) (domain string, id uint16, cname stri
 
     _, addrs, err := answer(domain, "server", d, dnsType)
     if err == nil {
-        cname = addrs[0].(*dnsRR_CNAME).Cname
+        cname = addrs[0].(*dnsRR_NS).Ns
     }
     return
 }
